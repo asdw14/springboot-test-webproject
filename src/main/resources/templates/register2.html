@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<title>Signin Template for Bootstrap</title>
+		<!-- Bootstrap core CSS -->
+		<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+		<!-- Custom styles for this template -->
+		<link th:href="@{/css/signin.css}" rel="stylesheet">
+		<script type="text/javascript" th:src="@{/js/jquery-s-3.4.1.js}" ></script>
+
+		<script>
+			/**
+			 * 发送短信验证码
+			 */
+			$(function() {
+				$("#sendSms").click(function sendValidateCode(obj) {
+					var mobileReg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+					var countdown = 60, timerTag;
+					var mobile = $("#mobile").val().trim();
+					if (mobile != "") {
+						var mobileResult = mobileReg.test(mobile);
+						if (mobileResult) {
+							alert("验证码发送成功，请注意至邮箱查收！")
+							$("#sendSms").attr("disabled", "disabled");
+							$(obj).css("background-color", "#999");
+							setTime(obj, countdown, timerTag);
+							$.ajax({
+								url: "http://localhost:8080/sendCode",
+								type: "post",
+								dataType: "json",
+								async: false,
+								data: {emailAddress: mobile},
+								beforeSend: function () {
+									$("#sendSms").attr("disabled", "disabled");
+									$(obj).css("background-color", "#999");
+								},
+								success: function (data) {
+									if (data.result == "success") {
+										alert("验证码发送成功，请注意查收！")
+										setTime(obj, countdown, timerTag);
+									} else {
+										countdown = -1;
+									}
+								},
+								complete: function () {
+									$("#sendSms").removeAttr("disabled");
+								},
+							});
+						} else {
+							alert("请输入正确的邮箱！");
+						}
+					} else {
+						alert("邮箱不能为空，请重新输入");
+					}
+				});
+
+				/**
+				 * 短信验证码计数
+				 */
+				function setTime(obj, countdown, timerTag) {
+					if (countdown <= 0) {
+						$(obj).removeAttr("disabled").css("background-color", "rgb(24, 197, 133)");
+						$("#sendSms").attr("onclick", "sendValidateCode(this)");
+						//            $(obj).html("重新发送");
+						$("#sendSms").val("点击重新获取验证码").removeAttr("disabled").removeClass(
+								"disabled");
+						countdown = 60;
+						clearTimeout(timerTag);
+					} else {
+						$("#sendSms").attr("disabled", true);//点击了"发送"按钮后，点击失效。
+						$("#sendSms").addClass("disabled");//置灰
+						//            $(obj).html("重新发送(" + countdown + ")");
+						$("#sendSms").attr("value", "" + countdown + "秒后重新获取验证码");
+						countdown--;
+						timerTag = setTimeout(function () {
+							setTime(obj, countdown, timerTag);
+						}, 1000);
+					}
+				}
+			});
+		</script>
+	</head>
+
+	<body class="text-center">
+		<form class="form-signin" th:action="@{/user/register}" method="post">
+			<img class="mb-4" th:src="@{/img/bootstrap-solid.svg}" alt="" width="72" height="72">
+			<h1 class="h3 mb-3 font-weight-normal">欢迎注册</h1>
+
+			<input type="text" class="form-control"  name="username" placeholder="用户名" required="" autofocus="" th:value="${user.getUsername()}">
+			<input type="password" class="form-control" placeholder="密码" name="password" required="" th:value="${user.getPassword()}">
+			<input type="text" class="form-control" placeholder="邮箱" name="emailAddress" id= "mobile" required="" th:value="${user.getEmail()}">
+
+			<div>
+				<tr>
+					<td width="235px">邮箱验证码：</td>
+					<td><input id="smsCode" name="code" type="text"  placeholder="请输入验证码" required=""/></td>
+				</tr>
+				<tr>
+					<td>
+						<h6 th:text="${msg}" style="color:red;"></h6>
+						<input type="button" id="sendSms" class="btn btn-info" value="获取验证码" />
+					</td>
+				</tr>
+			</div>
+		<br>
+        </label>
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">注册</button>
+			<p class="mt-5 mb-3 text-muted">© 2020-2021</p>
+			<a class="btn btn-sm" th:href="@{/index.html(l='zh_CN')}">中文</a>
+			<a class="btn btn-sm" th:href="@{/index.html(l='en_US')}">English</a>
+		</form>
+
+	</body>
+
+</html>
