@@ -5,7 +5,7 @@
 <mapper namespace="com.dizhongdi.mapper.UserMapper">
 
     <insert id="addUser" parameterType="User">
-        insert into myuser(username,password) values(#{username},#{password});
+        insert into myuser(username,password,email) values(#{username},#{password},#{email});
     </insert>
     <select id="queryUser" parameterType="User" resultType="int">
         select count(*) from myuser where username = #{username} and password=#{password}
